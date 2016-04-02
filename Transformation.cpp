@@ -1,16 +1,6 @@
-/*
 
-ID  :   ruthrab1
-TASK:   transform
-PROG:   transform
-LANG:   C++
-
-*/
-
-//#include <bits/stdc++.h>
 #include <iostream>
 #include <fstream>
-#include <memory>
 #define MAXSIZE 10
 using namespace std;
 
