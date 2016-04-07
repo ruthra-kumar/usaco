@@ -7,11 +7,6 @@ LANG:   C++
 
 */
 
-/* TODO
-    Make the program more memory effecient
-    use "a gram here and there" method
-
-*/
 
 #include <iostream>
 #include <fstream>
