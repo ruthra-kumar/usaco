@@ -15,10 +15,8 @@ using namespace std;
 //returns true if Palindrome and false otherwise
 bool Palindrome(long long num)
 {
-    long long tmp,n1=0,multiplier=10; //,n1=0,multiplier=10;
+    long long tmp,n1=0,multiplier=10;
     tmp = num;
-    //char digits[10]={'0','1','2','3','4','5','6','7','8','9'};
-    //string original,reversed;
 
     while(tmp)
     {
@@ -27,26 +25,9 @@ bool Palindrome(long long num)
     }
 
     return (num == n1);
-
-    /*
-    while(tmp)
-    {
-        reversed +=digits[(tmp%10)];
-        tmp/=10;
-    }
-    for(reverse_iterator<string::iterator> i=reversed.rbegin(); i != reversed.rend();i++)
-    {
-        original += *i;
-    }
-    //cout<<original<<" "<<reversed<<'\n';
-    return (original == reversed);
-    */
 }
 
 //return a list of numbers in bases ranging [2-10]
-//the new base will be in reverse order but when
-//finding palindromes it doesn't matter as both
-//direction yield the same number
 vector<long long> Convert_to_bases(long long int Num)
 {
     vector<long long> new_bases;
@@ -57,7 +38,7 @@ vector<long long> Convert_to_bases(long long int Num)
         tmp = Num;
         stack<int> digits;
 
-        //Implementing above while loop using stack and queue
+        //genrating new base using stack 
         while(tmp)
         {
             digits.push(tmp%Base);
@@ -81,7 +62,6 @@ bool Doublepal(vector<long long> NB)
     for(vector<long long>::iterator iter = NB.begin(); iter != NB.end() ; iter++)
     {
         if(Palindrome(*iter)){
-            //cout<<*iter<<'\n';
             Cnt++;
         }
         if(Cnt >= 2) return true;
