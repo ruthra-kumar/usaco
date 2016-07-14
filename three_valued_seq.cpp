@@ -1,3 +1,7 @@
+/*
+    IOI 1996 - Sorting a Three Valued Sequence
+    C++ port of the solution provided by Olympiad community
+*/
 #include <iostream>
 #include <vector>
 #include <cstdlib>
