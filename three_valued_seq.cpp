@@ -1,6 +1,6 @@
 /*
     IOI 1996 - Sorting a Three Valued Sequence
-    C++ port of the solution provided by Olympiad community
+    C++ port of the solution provided by Olympiad committee
 */
 #include <iostream>
 #include <vector>
