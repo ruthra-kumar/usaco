@@ -60,7 +60,8 @@ int main()
 
     buffer.push(start);
     cpy.push_back(start);
-
+    
+    //Simple DFS along with find method to remove duplicate states
     while(!buffer.empty())
     {
         buckets tmp =   buffer.front();
