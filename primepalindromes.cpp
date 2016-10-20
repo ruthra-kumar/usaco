@@ -6,46 +6,245 @@ LANG:   C++
 */
 #include <iostream>
 #include <fstream>
-#define SIZE    100000001
+#include <vector>
+#include <cmath>
+#include <algorithm>
 
 using namespace std;
 
-//One based Indexing
-bool    Primes[SIZE];
+vector<int>  palin;
+
+void Gen3()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            long long int   Palindrome  =   100*d1  +   10*d2   +   d1;
+            palin.push_back(Palindrome);
+        }
+    }
+}
+
+void Gen4()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            long long int   Palindrome  =   1000*d1  +   100*d2 +   10*d2   +   d1;
+            palin.push_back(Palindrome);
+        }
+    }
+}
+
+void Gen5()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            for(int d3  =   0;  d3  <=  9;  d3++)
+            {
+                long long int   Palindrome  =   10000*d1  +   1000*d2 +   100*d3   + 10*d2   +   d1;
+                palin.push_back(Palindrome);
+            }
+        }
+    }
+}
+
+void Gen6()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            for(int d3  =   0;  d3  <=  9;  d3++)
+            {
+                long long int   Palindrome  =   100000*d1  +   10000*d2 +   1000*d3    +    100*d3    + 10*d2   +   d1;
+                palin.push_back(Palindrome);
+            }
+        }
+    }
+}
+
+void Gen7()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            for(int d3  =   0;  d3  <=  9;  d3++)
+            {
+                for(int d4  =   0;  d4  <=  9;  d4++)
+                {
+                    long long int   Palindrome  =   1000000*d1  +   100000*d2 +   10000*d3    +    1000*d4    + 100*d3   + 10*d2   +   d1;
+                    palin.push_back(Palindrome);
+                }
+            }
+        }
+    }
+}
+
+void Gen8()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            for(int d3  =   0;  d3  <=  9;  d3++)
+            {
+                for(int d4  =   0;  d4  <=  9;  d4++)
+                {
+                    long long int   Palindrome  =   10000000*d1  +   1000000*d2 +   100000*d3    +    10000*d4    + 1000*d4   + 100*d3  +   10*d2   +   d1;
+                    palin.push_back(Palindrome);
+                }
+            }
+        }
+    }
+}
+
+void Gen9()
+{
+    for(int d1  =   1;  d1  <=  9;  d1+=2)  //Only Odd are allowed
+    {
+        for(int d2  =   0;  d2  <=  9;  d2++)
+        {
+            for(int d3  =   0;  d3  <=  9;  d3++)
+            {
+                for(int d4  =   0;  d4  <=  9;  d4++)
+                {
+                    for(int d5  =   0;  d5  <=  9;  d5++)
+                    {
+                        long long int   Palindrome  =   100000000*d1  +   10000000*d2 +   1000000*d3    +    100000*d4    + 10000*d5   + 1000*d4  +   100*d3   +   10*d2    +   d1;
+                        palin.push_back(Palindrome);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void GenRemain(int  num)
+{
+    switch(num)
+    {
+        case 3:
+        Gen3();
+        break;
+        
+        case 4:
+        Gen3();
+        Gen4();
+        break;
+        
+        case 5:
+        Gen3();
+        Gen4();
+        Gen5();
+        break;
+        
+        case 6:
+        Gen3();
+        Gen4();
+        Gen5();
+        Gen6();
+        break;
+        
+        case 7:
+        Gen3();
+        Gen4();
+        Gen5();
+        Gen6();
+        Gen7();
+        break;
+        
+        case 8:
+        Gen3();
+        Gen4();
+        Gen5();
+        Gen6();
+        Gen7();
+        Gen8();
+        break;
+        
+        case 9:
+        Gen3();
+        Gen4();
+        Gen5();
+        Gen6();
+        Gen7();
+        Gen8();
+        Gen9();
+        break;
+        
+        default:break;
+    }
+}
 
 int main()
 {
     std::ios_base::sync_with_stdio(false);
-    fstream fin("pprime.in",ios::in),fout("pprime.out",ios::out);
+    fstream fin("pprime.in",ios::in);   
+    int len =   0;
     long    long    int a,b;
-    for(long    long    int i=0;    i<SIZE;i++) Primes[i]   =   1;
-    fin >>  a   >>  b;
-    fin.close();
-    long    long    int upper_range =   (b/2);
-    for(long    long    int index   =   2;  index   <= upper_range; index++)
+    
+    int digits_upper,digits_lower;
+    long long int tmp =   a;
+    fin >>  a>> b;
+    while(tmp)
     {
-        if(Primes[index])
+        len++;
+        tmp/=10;
+    }
+    digits_lower    =   len;
+    len =   0;
+    
+    tmp =   b;
+    while(tmp)
+    {
+        len++;
+        tmp/=10;
+    }
+    digits_upper    =   len;
+    
+    //One and Two digits
+    for(int i=2;i<100;i++)
+    {
+        if(i    >=  10   && i   <=  99)
         {
-            for(long    long    int val =   index+index;  val <   SIZE;   val+=index)
+            if(i/10 ==  i%10)
             {
-                Primes[val] =   0;
+                palin.push_back(i);
             }
         }
+        else
+            palin.push_back(i);
     }
-
-    for(;   a   <=  b;  a++)
+    
+    GenRemain(digits_upper);
+    sort(palin.begin(),palin.end());
+    
+    fstream fout("pprime.out",ios::out);
+    
+    for(unsigned int i=0;   i   <   palin.size();   i++)
     {
-        if(Primes[a])
+
+        if(palin[i] >=  a   &&  palin[i]    <=  b)
         {
-            long    long    int rev =   0,tmp =   a;
-
-            while(tmp)
+            bool Prime  =   true;
+            for(int j=2;    j   <=  sqrt(palin[i]); j++)
             {
-                rev =   ( (rev * 10)+tmp%10);
-                tmp/=10;
+                if(palin[i]%j   ==  0)
+                {
+                    Prime   =   false;
+                    break;
+                }
             }
-
-            if(rev  ==  a)  fout    <<  a   <<  '\n';
+            
+            if(Prime)
+                fout    <<  palin[i]    <<  '\n';
+            
         }
     }
     fout.close();
