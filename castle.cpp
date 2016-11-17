@@ -1,3 +1,10 @@
+/*
+ID  : ruthrab1
+TASK: castle
+PROG: castle
+LANG: C++
+*/
+#include    <fstream>
 #include    <iostream>
 #include    <queue>
 #include    <stack>
@@ -7,14 +14,30 @@
 
 using namespace std;
 
-int Map[SIZE][SIZE];
-int CopyMap[SIZE][SIZE];
-int Visited[SIZE][SIZE];
-
 struct  Pos
 {
     int x,y;
 };
+
+struct ScoreCard
+{
+    int x,y,Score;
+    char    Direction;
+
+    ScoreCard()
+    {
+        Score   =   0;
+        Direction   =   'A';
+    }
+
+};
+
+int HighestScore    =   0;
+int Map[SIZE][SIZE];
+int CopyMap[SIZE][SIZE];
+int Visited[SIZE][SIZE];
+ScoreCard Score[SIZE][SIZE];
+
 
 struct Possibility
 {
@@ -27,6 +50,8 @@ struct Possibility
         Direction   =   'A';
     }
 };
+
+vector< pair<Possibility, vector< vector< pair<int,int>   >   > > > Possibilities;
 
 vector<Pos> Connections(int  x,int   y,int  m,int   n)
 {
@@ -234,9 +259,13 @@ int Getsize(vector< vector< pair< int, int > > > lst)
 
 void    Permute(int m,int n)
 {
-    vector< pair<Possibility, vector< vector< pair<int,int>   >   > > > Possibilities;
     //Remove walls
-    vector<int> walls{1,2,4,8};
+    vector<int> walls;
+    walls.push_back(1);
+    walls.push_back(2);
+    walls.push_back(4);
+    walls.push_back(8);
+
     for(unsigned int index=0;   index    <  walls.size();   index++)
     {
         int wall    =   walls[index];
@@ -282,28 +311,25 @@ void    Permute(int m,int n)
             }
         }
     }
-
-    for(unsigned int x=0;   x<Possibilities.size(); x++)
-    {
-        cout    << "("<<  (Possibilities[x].first).x <<  "," <<  (Possibilities[x].first).y <<  ") "  <<  (Possibilities[x].first).Direction <<
-        " -> " <<  Getsize(Possibilities[x].second)   <<  '\n';
-    }
 }
 
 int main()
 {
+    fstream fin("castle.in",ios::in);
+
     int m,n;
     int rooms   =   0;
     vector< vector< pair<int,int> > > roomSize;
-    cin >>   m   >>   n;
+    fin >>   m   >>   n;
 
     for(int i=1;    i   <=  n;  i++)
     {
         for(int j=1;    j  <=  m;   j++)
         {
-            cin >>  Map[i][j];
+            fin >>  Map[i][j];
         }
     }
+    fin.close();
 
     ResetMap(n,m);
 
@@ -318,9 +344,63 @@ int main()
             }
         }
     }
+    fstream fout("castle.out",ios::out);
 
+    fout    <<  rooms   <<  '\n';
+    fout    <<  Getsize(roomSize)   <<  '\n';
     //Start permutation
     Permute(m,n);
+
+    for(unsigned int x=0;   x<Possibilities.size(); x++)
+    {
+        /*
+        cout    << "("<<  (Possibilities[x].first).x <<  "," <<  (Possibilities[x].first).y <<  ") "  <<  (Possibilities[x].first).Direction <<
+        " -> " <<  Getsize(Possibilities[x].second)   <<  '\n';
+        */
+        if( Getsize(Possibilities[x].second) >  (Score[(Possibilities[x].first).x][(Possibilities[x].first).y].Score) )
+        {
+            ScoreCard   sc;
+            sc.Score    =   Getsize(Possibilities[x].second);
+            sc.Direction    =   (Possibilities[x].first).Direction;
+            sc.x    =   (Possibilities[x].first).x;
+            sc.y    =   (Possibilities[x].first).y;
+            Score[(Possibilities[x].first).x][(Possibilities[x].first).y] = sc;
+
+            if(sc.Score >   HighestScore)
+            {
+                HighestScore    =   sc.Score;
+            }
+        }
+    }
+
+    vector<ScoreCard>   lst;
+    //Row
+    for(int i=n;    i   >=  1;  i--)
+    {
+        //Column
+        for(int j=0;    j   <=  m  ;   j++)
+        {
+            if(Score[i][j].Score    ==  HighestScore)
+            {
+                lst.push_back(Score[i][j]);
+            }
+        }
+    }
+
+    fout    <<  HighestScore    <<  '\n';
+    fout    <<  lst[0].x << " " << lst[0].y << " "  <<  lst[0].Direction    <<  '\n';
+
+    /*
+    for(int i=1;    i   <=  n;  i++)
+    {
+        for(int j=1;    j  <=  m;   j++)
+        {
+            cout    <<  Score[i][j].Score   << " "  <<  Score[i][j].Direction <<  '\t';
+        }
+        cout    <<  '\n';
+    }
+    */
+    fout.close();
 
     return  0;
 }
