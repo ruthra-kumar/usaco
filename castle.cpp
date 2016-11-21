@@ -13,13 +13,24 @@ LANG: C++
 #define SIZE    51
 using namespace std;
 
-int MapOrigial[SIZE][SIZE];
+struct  Ans
+{
+    int x,y;
+    int LSize;
+    char    Wall;
+
+};
 
 int Map[SIZE][SIZE];
 int Visited[SIZE][SIZE];
-pair<   pair<int,int>,  char>   Wallsremoved[SIZE][SIZE];
+pair<int,char> Score[SIZE][SIZE];
 
-int m,n,LargestRoom =   0,roomCount   =   1;
+int m,n,roomcount   =   1;
+int LargestRoom =   0;
+int NewLargestRoom  =   0;
+int LargestRoomNo   =   0;
+vector<int> Rooms;
+vector<Ans> Sol;
 
 void    PrintVisited()
 {
@@ -27,25 +38,24 @@ void    PrintVisited()
     {
         for(int j=1;j<=n;j++)
         {
-            cout    <<  Visited[i][j]   <<  ' ';
+            cout    <<  Visited[i][j] << " ";
         }
         cout    <<  '\n';
     }
     cout    <<  '\n';
+    //cin.get();
 }
 
-
-int BiggestRoom(vector< vector< pair<   int,int>    >   >   floor)
+void    FindBiggestRoom()
 {
-    int Max =   0;
-    for(unsigned int i=0;   i<floor.size(); i++)
+    for(unsigned int i=0;i<Rooms.size();    i++)
     {
-        if(floor[i].size()  >   Max)
+        if(Rooms[i] >   LargestRoom)
         {
-            Max =   floor[i].size();
+            LargestRoom =   Rooms[i];
+            LargestRoomNo   =   i;
         }
     }
-    return  Max;
 }
 
 vector< pair<   int,    int>    >   Connections(int x,int   y)
@@ -94,176 +104,124 @@ vector< pair<   int,    int>    >   Connections(int x,int   y)
     return  Neighbours;
 }
 
-vector< pair<   int,int >   >   Traverse(int    x,int   y)
+int Traverse(int    x,int   y)
 {
-    vector< pair<   int,int >   >   rooms;
-    queue<  pair<int,int>   >   buffer;
     vector< pair<int,int>   >   sample;
-
+    queue<  pair<int,int>   >   buffer;
     buffer.push(    make_pair(x,y)    );
+    int roomSize    =   0;
 
     while(!buffer.empty())
     {
-        //PrintVisited();
-        //cin.get();
-        pair<int    ,int>   tmp =   buffer.front();
-        vector< pair<   int,int >   >   Con =   Connections(tmp.first,tmp.second);
+        pair<int,int>   tmp =   buffer.front();
 
         if(Visited[tmp.first][tmp.second]   ==  0)
         {
-            rooms.push_back(tmp);
+            roomSize++;
         }
-        //cout    <<  "(" <<  tmp.first   <<  "," <<  tmp.second  <<  ") -> \t";
-        for(unsigned int i=0;   i<Con.size();  i++)
+
+        vector< pair<int,int>   >   cons    =   Connections(tmp.first,tmp.second);
+
+        for(unsigned int i=0;   i<cons.size();  i++)
         {
-           // cout    <<"("<<  Con[i].first    <<  "," <<  Con[i].second   << ")\t";
-            if( (Visited[Con[i].first][Con[i].second]    ==  0)  &&  find(sample.begin(),sample.end(),Con[i])   ==  sample.end() )
+            if((Visited[cons[i].first][cons[i].second]   ==  0)
+               && (find(sample.begin(),sample.end(),cons[i])   ==  sample.end()) )
             {
-                buffer.push(Con[i]);
-                sample.push_back(Con[i]);
+                buffer.push(cons[i]);
+                sample.push_back(cons[i]);
             }
         }
-        //cout    <<  '\n';
 
-        Visited[tmp.first][tmp.second]   =   roomCount;
+        Visited[tmp.first][tmp.second]   =   roomcount;
         buffer.pop();
     }
-    roomCount++;
-
-    return  rooms;
+    return  roomSize;
 }
 
-pair<int,int>    DFS()
-{
-    roomCount   =   1;
-
-    vector< vector< pair<   int,int>    >   >   floor;
-    for(int i=1;    i<=m;   i++)
-    {
-        for(int j=1;    j<=n;   j++)
-        {
-            if(Visited[i][j]    ==  0)
-            {
-                floor.push_back(Traverse(i,j));
-            }
-        }
-    }
-
-    return  make_pair(floor.size(),BiggestRoom(floor));
-
-}
-void    ResetMap()
+void    DFS()
 {
     for(int i=1;i<=m;i++)
     {
         for(int j=1;j<=n;j++)
         {
-            Map[i][j]   =   MapOrigial[i][j];
-        }
-    }
-
-    for(int i=0;i<SIZE;i++)
-    {
-        for(int j=0;j<SIZE;j++)
-        {
-            Visited[i][j]   =   0;
-        }
-    }
-}
-
-pair<   pair<int,int>,  char>    Removewalls(int x,int   y)
-{
-    vector< pair<   pair<   int,int>,   char>    >   Configs;
-    vector<char>    Dir;
-
-    //Remove wall on west
-    if((Map[x][y]    &   1)  ==  1)
-    {
-        Map[x][y]   =   (Map[x][y]   -   1);
-        Map[x][y-1] =   (Map[x][y-1]    -   4);
-
-        Configs.push_back(  make_pair(DFS(),'W'));
-    }
-
-    ResetMap();
-
-    //Remove wall on north
-    if((Map[x][y]    &   2)  ==  2)
-    {
-        Map[x][y]   =   (Map[x][y]   -   2);
-        Map[x-1][y] =   (Map[x-1][y]    -   8);
-
-        Configs.push_back(  make_pair(DFS(),'N'));
-    }
-
-    ResetMap();
-
-    //Remove wall on east
-    if((Map[x][y]    &   4)  ==  4)
-    {
-        Map[x][y]   =   (Map[x][y]   -   4);
-        Map[x][y+1] =   (Map[x][y+1]    -   1);
-
-        Configs.push_back(  make_pair(DFS(),'E'));
-    }
-
-    ResetMap();
-
-    //Remove wall on south
-    if((Map[x][y]    &   8)  ==  8)
-    {
-        Map[x][y]   =   (Map[x][y]   -   8);
-        Map[x+1][y] =   (Map[x+1][y]    -   2);
-
-        Configs.push_back(  make_pair(DFS(),'S'));
-    }
-
-    ResetMap();
-
-    pair<   pair<int,int>,  char>   High    =   make_pair(make_pair(0,0),'A');
-    for(unsigned int i=0;   i   <   Configs.size(); i++)
-    {
-        if((Configs[i].first).second >=  (High.first).second)
-        {
-
-            if((Configs[i].first).second ==  (High.first).second)
+            if(Visited[i][j]    ==  0)
             {
-                if(Configs[i].second    ==  'N')
-                {
-                    High    =   Configs[i];
-                }
-            }
-            else
-            {
-                High    =   Configs[i];
+                Rooms.push_back(Traverse(i,j));
+                roomcount++;
             }
         }
-        //cout    << "("<<x<<","<<y<<") "<<  Configs[i].second << " " << (Configs[i].first).second<<'\n';
     }
-    //  cout<<'\n';
-
-    return  High;
-
 }
 
 void    Joinrooms()
 {
+    //Remove wall only on east side
     for(int i=1;i<=m;i++)
+    {
+        for(int j=1;j<n;j++)
+        {
+            //If a wall is present on east side
+            if((Map[i][j]    &   4)  ==  4)
+            {
+                if(Visited[i][j]    !=  Visited[i][j+1]
+                   && ( (Rooms[Visited[i][j]]    +   Rooms[Visited[i][j+1]])    >   LargestRoom)    )
+                {
+                    Ans pos;
+                    pos.x   =   i;
+                    pos.y   =   j;
+                    pos.Wall    =   'E';
+                    pos.LSize   =   (Rooms[Visited[i][j]]    +   Rooms[Visited[i][j+1]]);
+
+                    Sol.push_back(pos);
+
+                    pos.x   =   i;
+                    pos.y   =   j+1;
+                    pos.Wall    =   'W';
+                    pos.LSize   =   (Rooms[Visited[i][j]]    +   Rooms[Visited[i][j+1]]);
+
+                    Sol.push_back(pos);
+                }
+            }
+
+        }
+    }
+
+    //Remove wall only on south
+    for(int i=m;i>=2;i--)
     {
         for(int j=1;j<=n;j++)
         {
-            //Remove walls
-            Wallsremoved[i][j]  =   Removewalls(i,j);
-            if( (Wallsremoved[i][j].first).second   >   LargestRoom)
+            if((Map[i][j]    &   2)  ==  2)
             {
-                LargestRoom =   (Wallsremoved[i][j].first).second;
+
+                if(Visited[i][j]    !=  Visited[i-1][j]
+                   && ( (Rooms[Visited[i][j]]    +   Rooms[Visited[i-1][j]])    >   LargestRoom)    )
+                {
+                    Ans pos;
+                    pos.x   =   i;
+                    pos.y   =   j;
+                    pos.Wall    =   'N';
+                    pos.LSize   =   (Rooms[Visited[i][j]]    +   Rooms[Visited[i-1][j]]);
+
+                    Sol.push_back(pos);
+
+                    pos.x   =   i-1;
+                    pos.y   =   j;
+                    pos.Wall    =   'S';
+                    pos.LSize   =   (Rooms[Visited[i][j]]    +   Rooms[Visited[i-1][j]]);
+
+                    Sol.push_back(pos);
+                }
             }
+
         }
     }
 }
 
 int main()
 {
+
+    Rooms.push_back(0);
     ios_base::sync_with_stdio(false);
     fstream fin("castle.in",ios::in);
     fin >>  n   >>  m;
@@ -273,46 +231,65 @@ int main()
         for(int j=1;    j<=n;   j++)
         {
             fin >>  Map[i][j];
-            MapOrigial[i][j]    =   Map[i][j];
         }
     }
     fin.close();
 
-    fstream fout("castle.out",ios::out);
+    DFS();
 
-    pair<int,int> ans   =   DFS();
-    cout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
-    fout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
+    FindBiggestRoom();
 
     Joinrooms();
 
-    bool Found  =   false;
-
-    for(int j=1;j<=n    &&  (!Found);j++)
+    for(unsigned int i=0;   i<Sol.size();   i++)
     {
-        for(int i=m;i>=1    &&  (!Found);i--)
+        if(Sol[i].LSize >   NewLargestRoom)
         {
-            if((Wallsremoved[i][j].first).second ==  LargestRoom)
+            NewLargestRoom  =   Sol[i].LSize;
+        }
+
+        if(Sol[i].LSize >= Score[Sol[i].x][Sol[i].y].first )
+        {
+
+            if(Score[Sol[i].x][Sol[i].y].first  ==  Sol[i].LSize)
             {
-                //cout    <<  i   <<  " " <<  j   <<  '\n';
-                fout    <<  (Wallsremoved[i][j].first).second   <<  '\n';
-                fout    <<  i   <<  " " <<  j   <<  " " <<  Wallsremoved[i][j].second   <<  '\n';
+                if(Sol[i].Wall  ==  'N')
+                {
+                    Score[Sol[i].x][Sol[i].y].first =   Sol[i].LSize;
+                    Score[Sol[i].x][Sol[i].y].second =   Sol[i].Wall;
+                }
+                else    if(Sol[i].Wall  ==  'E')
+                {
+                    Score[Sol[i].x][Sol[i].y].first =   Sol[i].LSize;
+                    Score[Sol[i].x][Sol[i].y].second   =   Sol[i].Wall;
+                }
+            }
+            else
+            {
+                Score[Sol[i].x][Sol[i].y].first =   Sol[i].LSize;
+                Score[Sol[i].x][Sol[i].y].second =   Sol[i].Wall;
+            }
+
+        }
+    }
+
+    fstream fout("castle.out",ios::out);
+    fout    <<  roomcount-1   <<  '\n'    <<  LargestRoom <<  '\n';
+    bool    Found   =   false;
+    for(int i=1;i<=m    &&  (!Found);i++)
+    {
+        for(int j=n;j>=1    &&  (!Found);j--)
+        {
+            if(Score[j][i].first  ==  NewLargestRoom)
+            {
                 Found   =   true;
+                fout    <<  NewLargestRoom  <<  '\n';
+                fout    <<  j   << " "  <<  i <<  " " <<  Score[j][i].second    <<  '\n';
             }
         }
     }
-    fout.close();
-    /*
-    for(int i=1;i<=m;i++)
-    {
-        for(int j=1;j<=n;j++)
-        {
-            cout    <<"("<<  i   <<  "," <<  j   <<  ") " <<  Wallsremoved[i][j].second <<  " "
-            <<  (Wallsremoved[i][j].first).second   <<  '\n';
-        }
-        cout    <<  '\n';
-    }*/
 
+    fout.close();
 
     return 0;
 }
