@@ -4,310 +4,259 @@ TASK: castle
 PROG: castle
 LANG: C++
 */
-#include    <fstream>
 #include    <iostream>
-#include    <queue>
-#include    <stack>
-#include    <vector>
+#include    <fstream>
 #include    <utility>
+#include    <queue>
+#include    <algorithm>
+#include    <vector>
 #define SIZE    51
-
 using namespace std;
 
-struct  Pos
-{
-    int x,y;
-};
+int MapOrigial[SIZE][SIZE];
 
-struct ScoreCard
-{
-    int x,y,Score;
-    char    Direction;
-
-    ScoreCard()
-    {
-        Score   =   0;
-        Direction   =   'A';
-    }
-
-};
-
-int HighestScore    =   0;
 int Map[SIZE][SIZE];
-int CopyMap[SIZE][SIZE];
 int Visited[SIZE][SIZE];
-ScoreCard Score[SIZE][SIZE];
+pair<   pair<int,int>,  char>   Wallsremoved[SIZE][SIZE];
 
+int m,n,LargestRoom =   0,roomCount   =   1;
 
-struct Possibility
+void    PrintVisited()
 {
-    int x,y;
-    char    Direction;
-
-    Possibility()
+    for(int i=1;i<=m;i++)
     {
-        x   =   y   =   0;
-        Direction   =   'A';
+        for(int j=1;j<=n;j++)
+        {
+            cout    <<  Visited[i][j]   <<  ' ';
+        }
+        cout    <<  '\n';
     }
-};
-
-vector< pair<Possibility, vector< vector< pair<int,int>   >   > > > Possibilities;
-
-vector<Pos> Connections(int  x,int   y,int  m,int   n)
-{
-    vector<Pos> t;
-    //North
-    if((Map[x][y]    &   2   )   ==  0)
-    {
-        Pos p;
-        p.x =   x-1;
-        p.y =   y;
-
-        if(Visited[p.x][p.y]    ==  0   &&   (p.x   >=  1)   )
-            t.push_back(p);
-    }
-    //West
-    if((Map[x][y]    &   1   )  ==  0)
-    {
-        Pos p;
-        p.x =   x;
-        p.y =   y-1;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.y >= 1 ) )
-            t.push_back(p);
-
-    }
-    //East
-    if((Map[x][y]    &   4   )   ==  0 )
-    {
-
-        Pos p;
-        p.x =   x;
-        p.y =   y+1;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.y    <=  m))
-            t.push_back(p);
-
-    }
-    //south
-    if((Map[x][y]    &   8   )  ==  0)
-    {
-        Pos p;
-        p.x =   x+1;
-        p.y =   y;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.x    <=  n))
-            t.push_back(p);
-    }
-
-    return t;
+    cout    <<  '\n';
 }
 
-vector<pair<int,int> > Traverse(int    x,int   y,int   m,int   n)
+
+int BiggestRoom(vector< vector< pair<   int,int>    >   >   floor)
 {
-    queue<Pos>  lst;
-    Pos cur;
-    cur.x   =   x;
-    cur.y   =   y;
-    lst.push(cur);
-    vector<pair<int,int> >    rooms;
-
-    while(!lst.empty())
+    int Max =   0;
+    for(unsigned int i=0;   i<floor.size(); i++)
     {
-        Pos tmp =   lst.front();
-        vector<Pos> l   =   Connections(tmp.x,tmp.y,m,n);
-        for(unsigned    int i=0;    i   <   l.size();   i++)
+        if(floor[i].size()  >   Max)
         {
-            lst.push(l[i]);
+            Max =   floor[i].size();
         }
-
-        //Mark Visited
-        Visited[tmp.x][tmp.y]   =   1;
-
-        //add to list to return
-        rooms.push_back(    make_pair(tmp.x,tmp.y)    );
-        lst.pop();
     }
+    return  Max;
+}
+
+vector< pair<   int,    int>    >   Connections(int x,int   y)
+{
+    vector< pair<   int,int>    >   Neighbours;
+
+    //check west
+    if((Map[x][y]    &   1)  ==  0)
+    {
+        if(y-1  >=  1)
+        {
+            if(Visited[x][y-1]  ==  0)
+                Neighbours.push_back(make_pair(x,y-1));
+        }
+    }
+
+    //check north
+    if((Map[x][y]    &   2)  ==  0)
+    {
+        if(x-1  >=  1)
+        {
+            if(Visited[x-1][y]  ==  0)
+                Neighbours.push_back(make_pair(x-1,y));
+        }
+    }
+
+    //check east
+    if((Map[x][y]    &   4)  ==  0)
+    {
+        if(y+1  <=  n)
+        {
+            if(Visited[x][y+1]  ==  0)
+                Neighbours.push_back(make_pair(x,y+1));
+        }
+    }
+    //check south
+    if((Map[x][y]    &   8)  ==  0)
+    {
+        if(x+1  <=  m)
+        {
+            if(Visited[x+1][y]  ==  0)
+                Neighbours.push_back(make_pair(x+1,y));
+        }
+    }
+
+    return  Neighbours;
+}
+
+vector< pair<   int,int >   >   Traverse(int    x,int   y)
+{
+    vector< pair<   int,int >   >   rooms;
+    queue<  pair<int,int>   >   buffer;
+    vector< pair<int,int>   >   sample;
+
+    buffer.push(    make_pair(x,y)    );
+
+    while(!buffer.empty())
+    {
+        //PrintVisited();
+        //cin.get();
+        pair<int    ,int>   tmp =   buffer.front();
+        vector< pair<   int,int >   >   Con =   Connections(tmp.first,tmp.second);
+
+        if(Visited[tmp.first][tmp.second]   ==  0)
+        {
+            rooms.push_back(tmp);
+        }
+        //cout    <<  "(" <<  tmp.first   <<  "," <<  tmp.second  <<  ") -> \t";
+        for(unsigned int i=0;   i<Con.size();  i++)
+        {
+           // cout    <<"("<<  Con[i].first    <<  "," <<  Con[i].second   << ")\t";
+            if( (Visited[Con[i].first][Con[i].second]    ==  0)  &&  find(sample.begin(),sample.end(),Con[i])   ==  sample.end() )
+            {
+                buffer.push(Con[i]);
+                sample.push_back(Con[i]);
+            }
+        }
+        //cout    <<  '\n';
+
+        Visited[tmp.first][tmp.second]   =   roomCount;
+        buffer.pop();
+    }
+    roomCount++;
+
     return  rooms;
 }
 
-vector<Pos> ConnectionsPossibilities(int  x,int   y,int  m,int   n)
+pair<int,int>    DFS()
 {
-    vector<Pos> t;
-    //North
-    if((CopyMap[x][y]    &   2   )   ==  0)
-    {
-        Pos p;
-        p.x =   x-1;
-        p.y =   y;
+    roomCount   =   1;
 
-        if(Visited[p.x][p.y]    ==  0   &&   (p.x   >=  1)   )
-            t.push_back(p);
-    }
-    //West
-    if((CopyMap[x][y]    &   1   )  ==  0)
+    vector< vector< pair<   int,int>    >   >   floor;
+    for(int i=1;    i<=m;   i++)
     {
-        Pos p;
-        p.x =   x;
-        p.y =   y-1;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.y >= 1 ) )
-            t.push_back(p);
-
-    }
-    //East
-    if((CopyMap[x][y]    &   4   )   ==  0 )
-    {
-
-        Pos p;
-        p.x =   x;
-        p.y =   y+1;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.y    <=  m))
-            t.push_back(p);
-
-    }
-    //south
-    if((CopyMap[x][y]    &   8   )  ==  0)
-    {
-        Pos p;
-        p.x =   x+1;
-        p.y =   y;
-        if(Visited[p.x][p.y]    ==  0   &&  (p.x    <=  n))
-            t.push_back(p);
+        for(int j=1;    j<=n;   j++)
+        {
+            if(Visited[i][j]    ==  0)
+            {
+                floor.push_back(Traverse(i,j));
+            }
+        }
     }
 
-    return t;
+    return  make_pair(floor.size(),BiggestRoom(floor));
+
 }
-
-void    ResetVisited()
+void    ResetMap()
 {
-    for(int i=0;    i<SIZE; i++)
+    for(int i=1;i<=m;i++)
     {
-        for(int j=0;    j<SIZE; j++)
+        for(int j=1;j<=n;j++)
+        {
+            Map[i][j]   =   MapOrigial[i][j];
+        }
+    }
+
+    for(int i=0;i<SIZE;i++)
+    {
+        for(int j=0;j<SIZE;j++)
         {
             Visited[i][j]   =   0;
         }
     }
 }
 
-void    ResetMap(int    n,int   m)
+pair<   pair<int,int>,  char>    Removewalls(int x,int   y)
 {
-    for(int i=1;    i   <=  n;  i++)
+    vector< pair<   pair<   int,int>,   char>    >   Configs;
+    vector<char>    Dir;
+
+    //Remove wall on west
+    if((Map[x][y]    &   1)  ==  1)
     {
-        for(int j=1;    j  <=  m;   j++)
-        {
-            CopyMap[i][j]   =   Map[i][j];
-        }
+        Map[x][y]   =   (Map[x][y]   -   1);
+        Map[x][y-1] =   (Map[x][y-1]    -   4);
+
+        Configs.push_back(  make_pair(DFS(),'W'));
     }
-}
 
-vector<pair<int,int> >    TraversePossibility(int   x,int   y,int   m,int   n)
-{
-    queue<Pos>  lst;
-    Pos cur;
-    cur.x   =   x;
-    cur.y   =   y;
-    lst.push(cur);
-    vector<pair<int,int> >    rooms;
+    ResetMap();
 
-    while(!lst.empty())
+    //Remove wall on north
+    if((Map[x][y]    &   2)  ==  2)
     {
-        Pos tmp =   lst.front();
-        vector<Pos> l   =   ConnectionsPossibilities(tmp.x,tmp.y,m,n);
-        for(unsigned    int i=0;    i   <   l.size();   i++)
-        {
-            lst.push(l[i]);
-        }
+        Map[x][y]   =   (Map[x][y]   -   2);
+        Map[x-1][y] =   (Map[x-1][y]    -   8);
 
-        //Mark Visited
-        Visited[tmp.x][tmp.y]   =   1;
-
-        //add to list to return
-        rooms.push_back(    make_pair(tmp.x,tmp.y)    );
-        lst.pop();
-
+        Configs.push_back(  make_pair(DFS(),'N'));
     }
-    return  rooms;
-}
 
-vector< vector< pair<int,int>   >   >    CheckPossibility(int m,int n)
-{
-    vector< vector< pair<int,int>   >   > lst;
-    for(int i=1;    i<=n;   i++)
+    ResetMap();
+
+    //Remove wall on east
+    if((Map[x][y]    &   4)  ==  4)
     {
-        for(int j=1;    j<=m;   j++)
+        Map[x][y]   =   (Map[x][y]   -   4);
+        Map[x][y+1] =   (Map[x][y+1]    -   1);
+
+        Configs.push_back(  make_pair(DFS(),'E'));
+    }
+
+    ResetMap();
+
+    //Remove wall on south
+    if((Map[x][y]    &   8)  ==  8)
+    {
+        Map[x][y]   =   (Map[x][y]   -   8);
+        Map[x+1][y] =   (Map[x+1][y]    -   2);
+
+        Configs.push_back(  make_pair(DFS(),'S'));
+    }
+
+    ResetMap();
+
+    pair<   pair<int,int>,  char>   High    =   make_pair(make_pair(0,0),'A');
+    for(unsigned int i=0;   i   <   Configs.size(); i++)
+    {
+        if((Configs[i].first).second >=  (High.first).second)
         {
-            if(Visited[i][j]    ==  0)
+
+            if((Configs[i].first).second ==  (High.first).second)
             {
-                lst.push_back(  TraversePossibility(i,j,m,n)  );
+                if(Configs[i].second    ==  'N')
+                {
+                    High    =   Configs[i];
+                }
+            }
+            else
+            {
+                High    =   Configs[i];
             }
         }
+        //cout    << "("<<x<<","<<y<<") "<<  Configs[i].second << " " << (Configs[i].first).second<<'\n';
     }
-    return  lst;
+    //  cout<<'\n';
+
+    return  High;
+
 }
 
-int Getsize(vector< vector< pair< int, int > > > lst)
+void    Joinrooms()
 {
-    int Max = 0;
-
-    for(unsigned int i=0;   i<lst.size();   i++)
+    for(int i=1;i<=m;i++)
     {
-        if(lst[i].size()    >=  Max)
+        for(int j=1;j<=n;j++)
         {
-            Max =   lst[i].size();
-        }
-    }
-
-    return Max;
-}
-
-void    Permute(int m,int n)
-{
-    //Remove walls
-    vector<int> walls;
-    walls.push_back(1);
-    walls.push_back(2);
-    walls.push_back(4);
-    walls.push_back(8);
-
-    for(unsigned int index=0;   index    <  walls.size();   index++)
-    {
-        int wall    =   walls[index];
-
-        //remove wall for each module
-        for(int i=1;    i<=n;   i++)
-        {
-            for(int j=1;    j<=m;   j++)
+            //Remove walls
+            Wallsremoved[i][j]  =   Removewalls(i,j);
+            if( (Wallsremoved[i][j].first).second   >   LargestRoom)
             {
-                if((CopyMap[i][j]    &   wall)   ==  wall)
-                {
-                    ResetMap(n,m);
-                    ResetVisited();
-
-                    Possibility tmp;
-
-                    tmp.x   =   i;
-                    tmp.y   =   j;
-
-                    switch(wall)
-                    {
-                        case    1:
-                            tmp.Direction   =   'W';
-                        break;
-                        case    2:
-                            tmp.Direction   =   'N';
-                        break;
-                        case    4:
-                            tmp.Direction   =   'E';
-                        break;
-                        case    8:
-                            tmp.Direction   =   'S';
-                        break;
-                        default:break;
-                    }
-
-                    //REMOVE WALL IF PRESENT
-                    CopyMap[i][j]   =   (CopyMap[i][j]   -   wall);
-
-                    //Traverse the new possibility
-                    Possibilities.push_back(make_pair(tmp,CheckPossibility(m,n)));
-                }
+                LargestRoom =   (Wallsremoved[i][j].first).second;
             }
         }
     }
@@ -315,92 +264,55 @@ void    Permute(int m,int n)
 
 int main()
 {
+    ios_base::sync_with_stdio(false);
     fstream fin("castle.in",ios::in);
+    fin >>  n   >>  m;
 
-    int m,n;
-    int rooms   =   0;
-    vector< vector< pair<int,int> > > roomSize;
-    fin >>   m   >>   n;
-
-    for(int i=1;    i   <=  n;  i++)
+    for(int i=1;    i<=m;i++)
     {
-        for(int j=1;    j  <=  m;   j++)
+        for(int j=1;    j<=n;   j++)
         {
             fin >>  Map[i][j];
+            MapOrigial[i][j]    =   Map[i][j];
         }
     }
     fin.close();
 
-    ResetMap(n,m);
-
-    for(int i=1;    i   <=  n;  i++)
-    {
-        for(int j=1;    j   <=  m;  j++)
-        {
-            if(Visited[i][j]    ==  0)
-            {
-                rooms++;
-                roomSize.push_back(Traverse(i,j,m,n));
-            }
-        }
-    }
     fstream fout("castle.out",ios::out);
 
-    fout    <<  rooms   <<  '\n';
-    fout    <<  Getsize(roomSize)   <<  '\n';
-    //Start permutation
-    Permute(m,n);
+    pair<int,int> ans   =   DFS();
+    cout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
+    fout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
 
-    for(unsigned int x=0;   x<Possibilities.size(); x++)
+    Joinrooms();
+
+    bool Found  =   false;
+
+    for(int j=1;j<=n    &&  (!Found);j++)
     {
-        /*
-        cout    << "("<<  (Possibilities[x].first).x <<  "," <<  (Possibilities[x].first).y <<  ") "  <<  (Possibilities[x].first).Direction <<
-        " -> " <<  Getsize(Possibilities[x].second)   <<  '\n';
-        */
-        if( Getsize(Possibilities[x].second) >  (Score[(Possibilities[x].first).x][(Possibilities[x].first).y].Score) )
+        for(int i=m;i>=1    &&  (!Found);i--)
         {
-            ScoreCard   sc;
-            sc.Score    =   Getsize(Possibilities[x].second);
-            sc.Direction    =   (Possibilities[x].first).Direction;
-            sc.x    =   (Possibilities[x].first).x;
-            sc.y    =   (Possibilities[x].first).y;
-            Score[(Possibilities[x].first).x][(Possibilities[x].first).y] = sc;
-
-            if(sc.Score >   HighestScore)
+            if((Wallsremoved[i][j].first).second ==  LargestRoom)
             {
-                HighestScore    =   sc.Score;
+                //cout    <<  i   <<  " " <<  j   <<  '\n';
+                fout    <<  (Wallsremoved[i][j].first).second   <<  '\n';
+                fout    <<  i   <<  " " <<  j   <<  " " <<  Wallsremoved[i][j].second   <<  '\n';
+                Found   =   true;
             }
         }
     }
-
-    vector<ScoreCard>   lst;
-    //Row
-    for(int i=n;    i   >=  1;  i--)
-    {
-        //Column
-        for(int j=0;    j   <=  m  ;   j++)
-        {
-            if(Score[i][j].Score    ==  HighestScore)
-            {
-                lst.push_back(Score[i][j]);
-            }
-        }
-    }
-
-    fout    <<  HighestScore    <<  '\n';
-    fout    <<  lst[0].x << " " << lst[0].y << " "  <<  lst[0].Direction    <<  '\n';
-
+    fout.close();
     /*
-    for(int i=1;    i   <=  n;  i++)
+    for(int i=1;i<=m;i++)
     {
-        for(int j=1;    j  <=  m;   j++)
+        for(int j=1;j<=n;j++)
         {
-            cout    <<  Score[i][j].Score   << " "  <<  Score[i][j].Direction <<  '\t';
+            cout    <<"("<<  i   <<  "," <<  j   <<  ") " <<  Wallsremoved[i][j].second <<  " "
+            <<  (Wallsremoved[i][j].first).second   <<  '\n';
         }
         cout    <<  '\n';
-    }
-    */
-    fout.close();
+    }*/
 
-    return  0;
+
+    return 0;
 }
