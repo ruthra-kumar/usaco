@@ -144,7 +144,9 @@ pair<int,int>    DFS()
         {
             if(Visited[i][j]    ==  0)
             {
+                //cout    <<  "\t"    <<  i   <<  " " <<  j   << "\n";
                 floor.push_back(Traverse(i,j));
+                //PrintVisited();
             }
         }
     }
@@ -248,36 +250,65 @@ pair<   pair<int,int>,  char>    Removewalls(int x,int   y)
 
 void    Joinrooms()
 {
-    vector< pair<int,int>   >   flr;
-    for(int i=1;i<m;i++)
+    //Remove wall only on east side
+    for(int i=1;i<=m;i++)
     {
         for(int j=1;j<n;j++)
         {
-            //Remove walls
-            /*
-            Wallsremoved[i][j]  =   Removewalls(i,j);
-            if( (Wallsremoved[i][j].first).second   >   LargestRoom)
-            {
-                LargestRoom =   (Wallsremoved[i][j].first).second;
-            }
-            */
-
             if((Map[i][j]    &   4)  ==  4)
             {
-                cout    <<  "Wall " << i << " " <<  j   <<  '\n';
                 Map[i][j]   =   Map[i][j]   -   4;
                 Map[i][j+1] =   Map[i][j+1] -   1;
 
+                pair<int,int>   tmp =   DFS();
+
+                if(tmp.second   >   LargestRoom)
+                {
+                    LargestRoom =   tmp.second;
+                }
                 //flr.push_back( DFS() );
+                Wallsremoved[i][j]  =   make_pair(  tmp,'E');
+                if( tmp.second  >   (Wallsremoved[i][j+1].first).second)
+                {
+                    Wallsremoved[i][j+1]  =   make_pair(  tmp,'W');
+                }
+                //cout    <<"East ("    <<  i   <<  "," <<  j  <<  ") "    <<  flr[ flr.size()-1 ].first   << " " << flr[ flr.size()-1 ].second    << '\n';
                 ResetMap();
             }
 
         }
     }
 
-    for(auto &X:flr)
+    //Remove wall only on south
+    for(int i=m;i>=2;i--)
     {
-        //cout    <<  X.first <<   " "    <<  X.second    <<  '\n';
+        for(int j=1;j<=n;j++)
+        {
+            if((Map[i][j]    &   2)  ==  2)
+            {
+                Map[i][j]   =   Map[i][j]   -   2;
+                Map[i-1][j] =   Map[i-1][j] -   8;
+
+                //flr.push_back( DFS() );
+                pair<int,int> tmp   =   DFS();
+
+                if(tmp.second   >   LargestRoom)
+                {
+                    LargestRoom =   tmp.second;
+                }
+                if(tmp.second   >=   (Wallsremoved[i][j].first).second )
+                {
+                    Wallsremoved[i][j]  =   make_pair(  tmp,'N');
+                    if(tmp.second   >   (Wallsremoved[i-1][j].first).second )
+                    {
+                        Wallsremoved[i-1][j]  =   make_pair(  tmp,'S');
+                    }
+                }
+                //cout    <<"North ("    <<  i   <<  "," <<  j  <<  ") "    <<  flr[ flr.size()-1 ].first   << " " << flr[ flr.size()-1 ].second    << '\n';
+                ResetMap();
+            }
+
+        }
     }
 }
 
@@ -298,15 +329,13 @@ int main()
     fin.close();
 
     fstream fout("castle.out",ios::out);
-    /*
-    pair<int,int> ans   =   DFS();
-    cout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
-    fout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
-    */
-    Joinrooms();
-    /*
-    bool Found  =   false;
 
+    pair<int,int> ans   =   DFS();
+    //cout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
+    fout    <<  ans.first   <<'\n'  <<  ans.second  <<  '\n';
+    ResetMap();
+    Joinrooms();
+    bool Found  =   false;
     for(int j=1;j<=n    &&  (!Found);j++)
     {
         for(int i=m;i>=1    &&  (!Found);i--)
@@ -320,6 +349,7 @@ int main()
             }
         }
     }
+
     fout.close();
     /*
     for(int i=1;i<=m;i++)
@@ -330,8 +360,7 @@ int main()
             <<  (Wallsremoved[i][j].first).second   <<  '\n';
         }
         cout    <<  '\n';
-    }*/
-
-
+    }
+    */
     return 0;
 }
