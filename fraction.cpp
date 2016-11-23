@@ -4,83 +4,80 @@ TASK: frac1
 PROG: frac1
 LANG: C++
 */
+
 #include    <fstream>
 #include    <iostream>
 #include    <utility>
 #include    <vector>
 #include    <list>
 #include    <algorithm>
+
+#define SIZE 25600
+
 using namespace std;
 struct  Frac
 {
     int num,den;
     float   val;
 };
-Frac    tmp;
-struct  pred
-{
-    Frac    a;
-    pred(const  Frac    &b) :   a(b){}
 
-    bool    operator()(const  Frac    &b)
-    {
-        return  (a.val   <   b.val);
-    }
-};
+Frac a[SIZE];
+
+bool pred(const Frac  &a,const  Frac  &b)
+{
+    if(a.val    <   b.val)  return  true;
+    return  false;
+}
+
+int gcd(int p,int q)
+{
+    if(q    ==  0)  return  p;
+    return  gcd(q,(p%q));
+}
 
 int main()
 {
     ios_base::sync_with_stdio(false);
-    //vector< pair<pair<int,int>,float> >   Fractions;
-    //vector<Frac>   Fractions;
-    list<Frac>  Fractions;
-    vector<float>   buffer;
-    int n;
+    fstream fin("frac1.in",ios::in);
+
+    int n,index =   2;
     float   frac    =   0.0;
     //cin >>  n;
-    fstream fin("frac1.in",ios::in);
+
+    a[0].num    =   0;
+    a[0].den    =   1;
+    a[0].val    =   0;
+
+    a[1].num    =   1;
+    a[1].den    =   1;
+    a[1].val    =   1;
+
     fin >>  n;
     fin.close();
 
-    for(int i=0;i<=n;i++)
+    for(int i=1;i<n;i++)
     {
-        for(int j=n;(j>=i);j--)
+        for(int j=(i+1);j<=n;j++)
         {
-            frac    =   (float)i/(float)j;
-            if(frac >=  0   &&  frac    <=  1   )
+            if(gcd(i,j) ==  1)
             {
-                tmp.num =   i;
-                tmp.den =   j;
-                tmp.val =   frac;
-                list<Frac>::iterator it  =   find_if(Fractions.begin(),Fractions.end(),pred(tmp));
-                if( it  !=  Fractions.end())
-                {
-                    //add before found element
-                    if(find(buffer.begin(),buffer.end(),tmp.val)    ==  buffer.end())
-                    {
-                        Fractions.insert(it,tmp);
-                        buffer.push_back(tmp.val);
-                    }
-                }
-                else
-                {
-                    //add to the end
-                    if(find(buffer.begin(),buffer.end(),tmp.val)    ==  buffer.end())
-                    {
-                        Fractions.push_back(tmp);
-                        buffer.push_back(tmp.val);
-                    }
-                }
+                a[index].num  =   i;
+                a[index].den  =   j;
+                a[index].val  =   (float)i/(float)j;
+                ++index;
             }
         }
     }
+    sort(a,a+index,pred);
     fstream fout("frac1.out",ios::out);
-    for(Frac f  :   Fractions)
+
+    for(int i=0;i<index;i++)
     {
-        //cout    <<  f.num   <<  "/" <<  f.den   <<  '\n';   //<<  " -> "  <<  f.val  <<'\n';
-        fout    <<  f.num   <<  "/" <<  f.den   <<  '\n';   //<<  " -> "  <<  f.val  <<'\n';
+        fout    <<  a[i].num    <<  "/" <<  a[i].den    <<  '\n';
     }
+
     fout.close();
 
     return 0;
 }
+
