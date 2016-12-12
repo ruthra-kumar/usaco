@@ -5,12 +5,28 @@
 
 using namespace std;
 
+int GetSize(vector<char>    s)
+{
+    int sz  =   0;
+    for(unsigned int i=0;i<s.size();i++)
+    {
+        if(s[i] ==  't' ||  s[i]    ==  'x')
+        {
+            sz++;
+        }
+    }
+    return  sz;
+}
+
 int Evaluate(vector<int>    val,vector<char>    sym)
 {
     int msum    =   0;
-    
-    
-    
+
+    for(unsigned int    i=0;i<GetSize(sym);i++)
+    {
+
+    }
+
     return  msum;
 }
 
