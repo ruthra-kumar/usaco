@@ -1,0 +1,82 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <map>
+
+using namespace std;
+
+bool uniq(unsigned long int num)
+{
+    vector<bool> digits(10,0);
+
+    while(num)
+    {
+        if(digits[num%10]   ==  0   &&  (num%10 != 0))
+        {
+            digits[num%10]  =   1;
+        }
+        else
+            return false;
+        num/=10;
+    }
+    return true;
+}
+
+bool runaround(unsigned long int num)
+{
+    unsigned long int tmp   =   num;
+    vector<int> digits;
+    map<int,bool> digit_count;
+
+    while(num)
+    {
+        digits.push_back(num%10);
+        digit_count[num%10] =   0;
+        num/=10;
+    }
+    reverse(digits.begin(),digits.end());
+
+    int start_digit   =   digits[0];
+    int start_index =   1;
+    //digit_count[start_digit]    =   1;
+
+    //main loop
+    while(   (  digit_count[    digits[start_index] ]   ==  0   )   &&  digits[start_index] !=  start_digit)
+    {
+        int next_index  =   ((start_index +   digits[start_index])%digits.size() - 1);
+
+        cout    <<  next_index  <<  '\n';
+        cin.get();
+
+        if(next_index   <   0)  next_index  =   digits.size()-1;
+
+        digit_count[    digits[next_index] ] =   1;
+
+        cout    <<  next_index  <<  '\n';
+        cin.get();
+
+        next_index++;
+        if(next_index   ==  digits.size())  next_index  =   0;
+
+        start_index =   next_index;
+    }
+}
+
+int main()
+{
+    unsigned long int n =   1;
+    n++;
+    n   =   81362;
+    /*for(;   n   <   1000000000; ++n)
+    {
+        if(uniq(n))
+        {
+            //cout    <<  n   <<  '\n';
+            runaround(n);
+        }
+    }
+    */
+    runaround(n);
+
+    return 0;
+}
