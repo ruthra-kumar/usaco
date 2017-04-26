@@ -8,6 +8,32 @@ using namespace std;
 long long int n,c;
 vector< vector<int> > states;
 vector<int> on,off;
+vector< vector<bool> > lamp_collection;
+
+
+bool cmp(const vector<bool> &a,const vector<bool> &b){
+  short mod = 2;
+  for(unsigned int i=0;i < a.size() ;i++){
+    if(a[i] < b[i] ){
+      mod = 1;
+      break;
+    }
+    else if(a[i] > b[i]){
+      mod = 0;
+      break;
+    }
+    else if(a[i] == b[i] ){
+      i++;
+    }
+  }
+
+  if(mod == 2){
+    mod = 1;
+  }
+  
+  return mod;
+}
+
 
 void Generate(long long int C,vector<int> sc){
 
@@ -89,46 +115,43 @@ void Cleanup(){
 }
 
 void Process_states(){
-  for(unsigned int i=0;i<states.size();i++){
+  for(unsigned int c_state=0;c_state<states.size();c_state++){
+    //for each state
+    
+    vector<bool> lamps(n,1);
 
-    vector<bool> lamps(n);
-
-    //Initialize
-    for(int z=0;z<n;z++){
+    //Initialize the lamps
+    /*    for(int z=0;z<n;z++){
       lamps[z] = 1;
     }
+    */
 
-    for(unsigned int j=0;j<states[i].size();j++){
+    for(unsigned int j=0;j<states[c_state].size();j++){
       
-      switch(states[i][j]){
+      switch(states[c_state][j]){
       case 1:
 	//Button 1 pressed
-
 	for(int i=0;i<n;i++){
 	  lamps[i] = !lamps[i];
 	}
-
 	break;
 
       case 2:
 	//if button 2 pressed
-
-	for(int i=1;i<=n;i++){
+	for(int i=1;i<=n;i+=2){
 	  lamps[i-1] = !lamps[i-1];
 	}
 	break;
 	
       case 3:
 	//if button 3 pressed
-
-	for(int i=2;i<=n;i++){
+	for(int i=2;i<=n;i+=2){
 	  lamps[i-1] = !lamps[i-1];
 	}
 	break;
 	
       case 4:
 	//if button 4 is pressed
-
 	for(int K=0; K <= n; K++){
 	  lamps[ (3*K)] = !lamps[ (3*K) ];
 	}
@@ -137,12 +160,30 @@ void Process_states(){
       }
     }
 
+    bool on_states = true, off_states = true;
+    //check if all on lamps from final state is present
     for(unsigned int x=0; x<on.size(); x++){
       if(lamps[ on[x] ] != 1){
-	break;
+	on_states = false;
       }
     }
+    //check if all off lamps from final state is present
+    for(unsigned int x=0; x<off.size(); x++){
+      if(lamps[ (off[x]-1) ] != 0){
+	off_states = false;
+      }
+    }
+
+    /*
+    for(unsigned int x = 0 ; x < lamps.size() ; x++ ){
+      cout << lamps[x];
+    }
+    cout << '\n';
+    */
     
+    if( on_states && off_states ){
+      lamp_collection.push_back( lamps );
+    }
     
   }
 }
@@ -187,6 +228,24 @@ int main(){
   */
 
   Process_states();
+  /*
+  for(unsigned int i=0;i<states.size();i++){
+    for(unsigned int j=0;j<states[i].size();j++){
+      cout << states[i][j] << " ";
+    }
+    cout << '\n';
+  }
+  */
+
+  sort(lamp_collection.begin(),lamp_collection.end(),cmp);
+  
+  for(unsigned int i=0; i < lamp_collection.size() ; i++){
+    for(unsigned int j=0; j < lamp_collection[i].size(); j++){
+      cout << lamp_collection[i][j];
+    }
+    cout << '\n';
+  }
+  
 
   return 0;
 }
