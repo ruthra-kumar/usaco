@@ -10,28 +10,20 @@ vector< vector<int> > states;
 vector<int> on,off;
 vector< vector<bool> > lamp_collection;
 
-
 bool cmp(const vector<bool> &a,const vector<bool> &b){
-  short mod = 2;
+
+  if(a.size() != b.size() ) return false;
+  
   for(unsigned int i=0;i < a.size() ;i++){
     if(a[i] < b[i] ){
-      mod = 1;
-      break;
+      return true;
     }
     else if(a[i] > b[i]){
-      mod = 0;
-      break;
+      return false;
     }
-    else if(a[i] == b[i] ){
-      i++;
-    }
-  }
-
-  if(mod == 2){
-    mod = 1;
   }
   
-  return mod;
+  return true;
 }
 
 
@@ -236,9 +228,10 @@ int main(){
     cout << '\n';
   }
   */
-
+  cout << lamp_collection.size() << '\n';
+  //  cout << "Sorting \n";
   sort(lamp_collection.begin(),lamp_collection.end(),cmp);
-  
+  //  cout << "Sorting done\n";
   for(unsigned int i=0; i < lamp_collection.size() ; i++){
     for(unsigned int j=0; j < lamp_collection[i].size(); j++){
       cout << lamp_collection[i][j];
