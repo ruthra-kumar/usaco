@@ -28,15 +28,12 @@ bool cmp(const vector<bool> &a,const vector<bool> &b){
 
 bool Present(vector<bool> current_lamp){
   bool found = false;
-  for(unsigned int i=0;i<lamp_collection.size();){
+  for(unsigned int i=0;i<lamp_collection.size();i++){
 
     //for each lamp
     unsigned int j;
-    for(j=0;j<lamp_collection[i].size();){
-      if(current_lamp[j] == lamp_collection[i][j]){
-	j++;
-      }
-      else{
+    for(j=0;j<lamp_collection[i].size();j++){
+      if(current_lamp[j] != lamp_collection[i][j]){
 	break;
       }
     }
@@ -96,7 +93,7 @@ void Process_states(vector<int> cur_state){
   bool on_states = true, off_states = true;
   //check if all on lamps from final state is present
   for(unsigned int x=0; x<on.size(); x++){
-    if(lamps[ on[x] ] != 1){
+    if(lamps[ on[x]-1 ] != 1){
       on_states = false;
     }
   }
@@ -120,6 +117,7 @@ void Process_states(vector<int> cur_state){
       lamp_collection.push_back(lamps);
     }
   }
+
 }
 
 void Generate(long long int C,vector<int> sc){
@@ -143,7 +141,9 @@ void Generate(long long int C,vector<int> sc){
   else{
     //once state is created, generate the required lamp configuration
     //states.push_back(sc);
+    //cout << "PRocessing states\n";
     Process_states(sc);
+    //cout << "Process Completed\n";
   }
 }
 
@@ -194,10 +194,10 @@ int main(){
     cout << '\n';
   }
   */
-  cout << lamp_collection.size() << '\n';
-  cout << "Sorting \n";
+  //cout << lamp_collection.size() << '\n';
+  //cout << "Sorting \n";
   sort(lamp_collection.begin(),lamp_collection.end(),cmp);
-  cout << "Sorting done\n";
+  //cout << "Sorting done\n";
   for(unsigned int i=0; i < lamp_collection.size() ; i++){
     for(unsigned int j=0; j < lamp_collection[i].size(); j++){
       cout << lamp_collection[i][j];
