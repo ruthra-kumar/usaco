@@ -1,7 +1,15 @@
+/*
+ID  :   ruthrab1
+TASK:   lamps
+PROG:   lamps
+LANG:   C++
+*/
+
 #include <iostream>
 #include <algorithm>
 #include <vector>
 #include <stack>
+#include <fstream>
 
 using namespace std;
 
@@ -41,7 +49,7 @@ bool Present(vector<bool> current_lamp){
       found = true;
       break;
     }
-    
+
   }
   return found;
 }
@@ -124,7 +132,7 @@ void Generate(long long int C,vector<int> sc){
 
   if(C > 0){
 
-    for(long long int current_option = 1; current_option <= 4; current_option++){
+    for(int current_option = 1; current_option <= 4; current_option++){
       vector<int> cpy(sc);
       if(cpy.empty() == false){
 	if(current_option != cpy.back()){
@@ -148,29 +156,30 @@ void Generate(long long int C,vector<int> sc){
 }
 
 int main(){
-
-  cin >> n >> c;
+  fstream fin("lamps.in",std::ios::in);
+  fin >> n >> c;
 
   int num;
 
-  cin >> num;
+  fin >> num;
 
   //save all the on of final state
 
   while(num != -1){
     on.push_back(num);
-    cin >> num;
+    fin >> num;
   }
 
   //save all the off of final state
 
-  cin >> num;
+  fin >> num;
 
   while(num != -1){
     off.push_back(num);
-    cin >> num;
+    fin >> num;
   }
-
+  fin.close();
+  
   //generate all possible states
   vector<int> state_change;
 
@@ -198,13 +207,18 @@ int main(){
   //cout << "Sorting \n";
   sort(lamp_collection.begin(),lamp_collection.end(),cmp);
   //cout << "Sorting done\n";
+
+  fstream fout("lamps.out",std::ios::out);
   for(unsigned int i=0; i < lamp_collection.size() ; i++){
     for(unsigned int j=0; j < lamp_collection[i].size(); j++){
-      cout << lamp_collection[i][j];
+      fout << lamp_collection[i][j];
     }
-    cout << '\n';
+    fout << '\n';
   }
-
+  if(lamp_collection.size() == 0){
+    fout << "IMPOSSIBLE\n";
+  }
+  fout.close();
 
   return 0;
 }
