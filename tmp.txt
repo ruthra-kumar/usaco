@@ -1,0 +1,171 @@
+/*
+ID:ruthrab1
+LANG:C++
+TASK:lamps
+*/
+#include <iostream>
+#include <fstream>
+#include <vector>
+#define lampsize 101
+#define buttons 5
+using namespace std;
+
+bool check_on_states = 1;
+bool check_off_states = 1;
+vector<int> final_on_state_pos;
+vector<int> final_off_state_pos;
+
+vector<vector<bool>> matched_lamps;
+
+void print(vector<bool> lmp)
+{
+    for(unsigned int i=1;i<lmp.size();i++)
+    {
+        cout << lmp[i];
+    }
+    cout << '\n';
+}
+
+void print_int(vector<int> states)
+{
+    for(unsigned int i=0;i<states.size();i++)
+    {
+        cout << states[i] << " " ;
+    }
+    cout <<states.size() <<" \n";
+}
+
+void match_lamps(vector<bool> cur_lamp)
+{
+    //print(cur_lamp);
+    bool match = true;
+    for(unsigned int i=0;i<final_on_state_pos.size();i++)
+    {
+        if(cur_lamp[final_on_state_pos[i]] != 1)
+        {
+            match = 0;
+            break;
+        }
+    }
+
+    for(unsigned int i=0;i<final_off_state_pos.size();i++)
+    {
+        if(cur_lamp[final_off_state_pos[i]] != 0)
+        {
+            match = 0;
+            break;
+        }
+    }
+
+    if(match == 1)
+    {
+        matched_lamps.push_back(cur_lamp);
+    }
+
+}
+
+void gen_pos(int cnt,int cval,vector<bool> cur_lmp)
+{
+    //print(cur_lmp);
+    vector<bool> cpy(cur_lmp.size());
+    if(cnt < cval)
+    {
+        for(int btn=1;btn<buttons;btn++)
+        {
+            switch(btn)
+            {
+                case 1:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i++)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 2:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i+=2)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 3:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=2;i<cpy.size();i+=2)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 4:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i+=3)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                default:break;
+            }
+        }
+    }
+    else
+    {
+        //match with final state
+        match_lamps(cur_lmp);
+    }
+
+}
+
+int main(int argc,char *argv[])
+{
+    ifstream fin("lamps.in");
+    ofstream fout("lamps.out");
+    int noof_lamps,c_value,f_lamp_pos = 0;
+    fin >> noof_lamps >> c_value;
+    fin >> f_lamp_pos;
+    while(f_lamp_pos != -1)
+    {
+        check_on_states = 1;
+        final_on_state_pos.push_back(f_lamp_pos);
+        fin >> f_lamp_pos;
+    }
+    fin >> f_lamp_pos;
+    while(f_lamp_pos != -1)
+    {
+        check_off_states = 1;
+        final_off_state_pos.push_back(f_lamp_pos);
+        fin >> f_lamp_pos;
+    }
+    //print_int(final_on_state_pos);
+    //print_int(final_off_state_pos);
+    vector<bool> lamp(noof_lamps+1,1);
+
+    gen_pos(0,c_value,lamp);
+
+    if(matched_lamps.empty())
+    {
+        fout << "IMPOSSIBLE" << '\n';
+    }
+    else
+    {
+        for(auto &x:matched_lamps)
+        {
+            unsigned int index = 1;
+            for(vector<bool> &y=x;index<y.size();index++)
+            {
+                fout << y[index];
+            }
+            fout << '\n';
+        }
+    }
+
+    fin.close();
+    fout.close();
+    return 0;
+}
