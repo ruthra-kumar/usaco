@@ -10,6 +10,86 @@ TASK:lamps
 #define buttons 5
 using namespace std;
 
+struct node
+{
+    bool *lamps;
+    node *from[buttons];
+    node *to[buttons];
+
+    node(int sz)
+    {
+        lamps = new bool[sz];
+        for(int i=0;i<sz;i++)
+        {
+            lamps[i] = 1;
+        }
+        for(int i=0;i<buttons;i++)
+        {
+            from[i] = 0;
+            to[i] = 0;
+        }
+    }
+
+    node* node(int sz,node *cur,int but)
+    {
+        lamps = new bool[sz];
+        for(int i=0;i<sz;i++)
+        {
+            lamps[i] = cur->lamps[i];
+        }
+        //perform button actiom
+        switch(but)
+        {
+        case 1:
+            for(int i=1;i<sz;i++)
+            {
+                lamps[i] = !lamps[i];
+            }
+            break;
+        case 2:
+            for(int i=1;i<sz;i+=2)
+            {
+                lamps[i] = !lamps[i];
+            }
+            break;
+        case 3:
+            for(int i=2;i<sz;i+=2)
+            {
+                lamps[i] = !lamps[i];
+            }
+            break;
+        case 4:
+            for(int i=1;i<sz;i+=3)
+            {
+                lamps[i] = !lamps[i];
+            }
+        break;
+            default:break;
+        }
+
+        for(int i=0;i<buttons;i++)
+        {
+            from[i] = 0;
+            to[i] = 0;
+        }
+        from[but] = cur;
+        cur->to[but] = this;
+
+
+        return this;
+    }
+
+    ~node()
+    {
+        delete[] lamps;
+        for(int i=0;i<buttons;i++)
+        {
+            delete[] from[i];
+            delete[] to[i];
+        }
+    }
+};
+
 bool check_on_states = 1;
 bool check_off_states = 1;
 vector<int> final_on_state_pos;
@@ -122,6 +202,57 @@ void gen_pos(int cnt,int cval,vector<bool> cur_lmp)
 
 }
 
+void gen_graph(int cur,int c_val,node *cur_node)
+{
+    if(cur < c_val)
+    {
+        node *nxt = NULL;
+        for(int i=1;i<buttons;i++)
+        {
+            switch(i)
+            {
+                case 1:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i++)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 2:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i+=2)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 3:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=2;i<cpy.size();i+=2)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                case 4:
+                    cpy.clear();
+                    cpy = cur_lmp;
+                    for(int i=1;i<cpy.size();i+=3)
+                    {
+                        cpy[i] = !cpy[i];
+                    }
+                    gen_pos((cnt+1),cval,cpy);
+                    break;
+                default:break;
+            }
+        }
+    }
+}
+
 int main(int argc,char *argv[])
 {
     ifstream fin("lamps.in");
@@ -144,6 +275,10 @@ int main(int argc,char *argv[])
     }
     //print_int(final_on_state_pos);
     //print_int(final_off_state_pos);
+
+    //initialize head node
+    node *head_node = new node(noof_lamps);
+
     vector<bool> lamp(noof_lamps+1,1);
 
     gen_pos(0,c_value,lamp);
@@ -164,6 +299,8 @@ int main(int argc,char *argv[])
             fout << '\n';
         }
     }
+
+    delete head_node;
 
     fin.close();
     fout.close();
