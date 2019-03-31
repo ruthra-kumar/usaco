@@ -1,224 +1,208 @@
 /*
-ID  :   ruthrab1
-TASK:   lamps
-PROG:   lamps
-LANG:   C++
+ID:ruthrab1
+LANG:C++
+TASK:lamps
+PROG:lamps
 */
-
 #include <iostream>
-#include <algorithm>
-#include <vector>
-#include <stack>
 #include <fstream>
-
+#include <vector>
+#include <bitset>
+#include <algorithm>
+#define N 100
 using namespace std;
 
-long long int n,c;
-vector< vector<int> > states;
+struct{
+    bool operator()(bitset<N> a,bitset<N> b)
+    {
+        for(int i=0;i<a.size();)
+        {
+            if(a[i] == b[i])
+            {
+                i++;
+            }
+            else if(a[i] < b[i])
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+} compare_bitset;
+
 vector<int> on,off;
-vector< vector<bool> > lamp_collection;
+vector<bitset<N>> valid_matches;
 
-bool cmp(const vector<bool> &a,const vector<bool> &b){
-
-  if(a.size() != b.size() ) return false;
-
-  for(unsigned int i=0;i < a.size() ;i++){
-    if(a[i] < b[i] ){
-      return true;
+bool is_valid(bitset<N> cur_lmp)
+{
+    for(auto &x:on)
+    {
+        if(cur_lmp[x-1] != 1)
+        {
+            return false;
+        }
     }
-    else if(a[i] > b[i]){
-      return false;
-    }
-  }
 
-  return true;
+    for(auto &y:off)
+    {
+        if(cur_lmp[y-1] != 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
-bool Present(vector<bool> current_lamp){
-  bool found = false;
-  for(unsigned int i=0;i<lamp_collection.size();i++){
-
-    //for each lamp
-    unsigned int j;
-    for(j=0;j<lamp_collection[i].size();j++){
-      if(current_lamp[j] != lamp_collection[i][j]){
-	break;
-      }
+bool compare(bitset<N> &a, bitset<N> &b, int limit)
+{
+    for(int i=0;i<limit;i++)
+    {
+        if(a[i] != b[i])
+            return false;
     }
-    if(j == current_lamp.size()){
-      found = true;
-      break;
-    }
-
-  }
-  return found;
+    return true;
 }
 
-void Process_states(vector<int> cur_state){
+bool present(bitset<N> &lmp,int no)
+{
+    for(auto &x:valid_matches)
+    {
+        if(compare(x,lmp,no))
+            return true;
+    }
+    return false;
+}
 
-  vector<bool> lamps(n,1);
+void print(bitset<N> &lmp)
+{
+    cout << lmp.to_string();
+    cout << '\n';
+}
 
-  //Initialize the lamps
-  /*    for(int z=0;z<n;z++){
-	lamps[z] = 1;
-	}
-  */
-
-  for(unsigned int j=0;j<cur_state.size();j++){
-
-    switch(cur_state[j]){
+void press_but(bitset<N> &cur_lmp,int but)
+{
+    switch(but)
+    {
     case 1:
-      //Button 1 pressed
-      for(int i=0;i<n;i++){
-	lamps[i] = !lamps[i];
-      }
-      break;
-
+        cur_lmp.flip();
+        break;
     case 2:
-      //if button 2 pressed
-      for(int i=1;i<=n;i+=2){
-	lamps[i-1] = !lamps[i-1];
-      }
-      break;
-
+        for(int i=0;i<cur_lmp.size();i+=2)
+        {
+            cur_lmp.flip(i);
+        }
+        break;
     case 3:
-      //if button 3 pressed
-      for(int i=2;i<=n;i+=2){
-	lamps[i-1] = !lamps[i-1];
-      }
-      break;
-
+        for(int i=1;i<cur_lmp.size();i+=2)
+        {
+            cur_lmp.flip(i);
+        }
+        break;
     case 4:
-      //if button 4 is pressed
-      for(int K=0; K <= n; K++){
-	lamps[ (3*K)] = !lamps[ (3*K) ];
-      }
-      break;
+        for(int i=0;i<cur_lmp.size();i+=3)
+        {
+            cur_lmp.flip(i);
+        }
+    break;
     default:break;
     }
-  }
-
-  bool on_states = true, off_states = true;
-  //check if all on lamps from final state is present
-  for(unsigned int x=0; x<on.size(); x++){
-    if(lamps[ on[x]-1 ] != 1){
-      on_states = false;
-    }
-  }
-  //check if all off lamps from final state is present
-  for(unsigned int x=0; x<off.size(); x++){
-    if(lamps[ (off[x]-1) ] != 0){
-      off_states = false;
-    }
-  }
-
-  /*
-    for(unsigned int x = 0 ; x < lamps.size() ; x++ ){
-    cout << lamps[x];
-    }
-    cout << '\n';
-  */
-  //if current lamp configuration matches the requirement
-  if( on_states && off_states ){
-    //check if a copy is already present
-    if(Present(lamps) == false){
-      lamp_collection.push_back(lamps);
-    }
-  }
-
 }
 
-void Generate(long long int C,vector<int> sc){
+int main(int argc,char *argv[])
+{
+    ifstream fin("lamps.in");
+    ofstream fout("lamps.out");
 
-  if(C > 0){
-
-    for(int current_option = 1; current_option <= 4; current_option++){
-      vector<int> cpy(sc);
-      if(cpy.empty() == false){
-	if(current_option != cpy.back()){
-	  cpy.push_back(current_option);
-	}
-	Generate(C-1,cpy);
-      }
-      else{
-	cpy.push_back(current_option);
-	Generate(C-1,cpy);
-      }
+    bitset<N> lmps;
+    int n,c,f_lamp_pos;
+    fin >> n >> c ;
+    fin >> f_lamp_pos;
+    while(f_lamp_pos != -1)
+    {
+        on.push_back(f_lamp_pos);
+        fin >> f_lamp_pos;
     }
-  }
-  else{
-    //once state is created, generate the required lamp configuration
-    //states.push_back(sc);
-    //cout << "PRocessing states\n";
-    Process_states(sc);
-    //cout << "Process Completed\n";
-  }
+    fin >> f_lamp_pos;
+    while(f_lamp_pos != -1)
+    {
+      off.push_back(f_lamp_pos);
+      fin >> f_lamp_pos;
+    }
+
+    lmps.flip();
+    if(c == 0)
+    {
+        if(is_valid(lmps) && !present(lmps,n))
+            valid_matches.push_back(lmps);
+    }
+    else if(c == 1)
+    {
+        for(int i=1;i<=4;i++)
+        {
+            lmps.set();
+            press_but(lmps,i);
+            if(is_valid(lmps) && !present(lmps,n))
+                valid_matches.push_back(lmps);
+        }
+
+    }
+    else
+    {
+        int butns[4];
+        for(int i=0;i<2;i++)
+        {
+            butns[0] = i;
+            for(int j=0;j<2;j++)
+            {
+                butns[1] = j;
+                for(int k=0;k<2;k++)
+                {
+                    butns[2] = k;
+                    for(int l=0;l<2;l++)
+                    {
+                        butns[3] = l;
+
+                        //do all operations
+                        bitset<N> str_lmp;
+                        str_lmp.flip();
+                        for(int op = 0;op < 4;op++)
+                        {
+                            if(butns[op])
+                                press_but(str_lmp,(op+1));
+                        }
+                        if(is_valid(str_lmp) && !present(str_lmp,n))
+                            valid_matches.push_back(str_lmp);
+
+                    }
+                }
+            }
+        }
+
+    }
+
+    if(valid_matches.empty())
+    {
+        fout << "IMPOSSIBLE" << '\n';
+    }
+    else
+    {
+        sort(valid_matches.begin(),valid_matches.end(), compare_bitset);
+        for(auto &x:valid_matches)
+        {
+            for(size_t i=0;i<n;i++)
+            {
+                fout << x[i];
+            }
+            fout << '\n';
+        }
+    }
+
+    fin.close();
+    fout.close();
+    return 0;
 }
 
-int main(){
-  fstream fin("lamps.in",std::ios::in);
-  fin >> n >> c;
-
-  int num;
-
-  fin >> num;
-
-  //save all the on of final state
-
-  while(num != -1){
-    on.push_back(num);
-    fin >> num;
-  }
-
-  //save all the off of final state
-
-  fin >> num;
-
-  while(num != -1){
-    off.push_back(num);
-    fin >> num;
-  }
-  fin.close();
-  
-  //generate all possible states
-  vector<int> state_change;
-
-  Generate(c,state_change);
-
-  //Cleanup();
-  /*
-  for(unsigned int i=0;i<states.size();i++){
-    for(unsigned int j=0;j<states[i].size();j++){
-      cout << states[i][j] << " ";
-    }
-    cout << '\n';
-  }
-  */
-
-  /*
-  for(unsigned int i=0;i<states.size();i++){
-    for(unsigned int j=0;j<states[i].size();j++){
-      cout << states[i][j] << " ";
-    }
-    cout << '\n';
-  }
-  */
-  //cout << lamp_collection.size() << '\n';
-  //cout << "Sorting \n";
-  sort(lamp_collection.begin(),lamp_collection.end(),cmp);
-  //cout << "Sorting done\n";
-
-  fstream fout("lamps.out",std::ios::out);
-  for(unsigned int i=0; i < lamp_collection.size() ; i++){
-    for(unsigned int j=0; j < lamp_collection[i].size(); j++){
-      fout << lamp_collection[i][j];
-    }
-    fout << '\n';
-  }
-  if(lamp_collection.size() == 0){
-    fout << "IMPOSSIBLE\n";
-  }
-  fout.close();
-
-  return 0;
-}
