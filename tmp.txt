@@ -1,308 +1,152 @@
-/*
-ID:ruthrab1
-LANG:C++
-TASK:lamps
-*/
 #include <iostream>
-#include <fstream>
+#include <algorithm>
 #include <vector>
-#define lampsize 101
-#define buttons 5
+#include <string>
+char charset[26] = { 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
 using namespace std;
 
-struct node
+size_t last_factor = 1;
+
+bool prime(size_t n)
 {
-    bool *lamps;
-    node *from[buttons];
-    node *to[buttons];
-
-    node(int sz)
+    //if(n == 2)
+    //    return false;
+    for(size_t i=(n/2);i>2;i-=2)
     {
-        lamps = new bool[sz];
-        for(int i=0;i<sz;i++)
-        {
-            lamps[i] = 1;
-        }
-        for(int i=0;i<buttons;i++)
-        {
-            from[i] = 0;
-            to[i] = 0;
-        }
+        if(n%i == 0)
+            return false;
     }
-
-    node* node(int sz,node *cur,int but)
-    {
-        lamps = new bool[sz];
-        for(int i=0;i<sz;i++)
-        {
-            lamps[i] = cur->lamps[i];
-        }
-        //perform button actiom
-        switch(but)
-        {
-        case 1:
-            for(int i=1;i<sz;i++)
-            {
-                lamps[i] = !lamps[i];
-            }
-            break;
-        case 2:
-            for(int i=1;i<sz;i+=2)
-            {
-                lamps[i] = !lamps[i];
-            }
-            break;
-        case 3:
-            for(int i=2;i<sz;i+=2)
-            {
-                lamps[i] = !lamps[i];
-            }
-            break;
-        case 4:
-            for(int i=1;i<sz;i+=3)
-            {
-                lamps[i] = !lamps[i];
-            }
-        break;
-            default:break;
-        }
-
-        for(int i=0;i<buttons;i++)
-        {
-            from[i] = 0;
-            to[i] = 0;
-        }
-        from[but] = cur;
-        cur->to[but] = this;
-
-
-        return this;
-    }
-
-    ~node()
-    {
-        delete[] lamps;
-        for(int i=0;i<buttons;i++)
-        {
-            delete[] from[i];
-            delete[] to[i];
-        }
-    }
-};
-
-bool check_on_states = 1;
-bool check_off_states = 1;
-vector<int> final_on_state_pos;
-vector<int> final_off_state_pos;
-
-vector<vector<bool>> matched_lamps;
-
-void print(vector<bool> lmp)
-{
-    for(unsigned int i=1;i<lmp.size();i++)
-    {
-        cout << lmp[i];
-    }
-    cout << '\n';
+    return true;
 }
 
-void print_int(vector<int> states)
+size_t gcd(size_t a,size_t b)
 {
-    for(unsigned int i=0;i<states.size();i++)
+    if(a < b)
     {
-        cout << states[i] << " " ;
+        return b;
     }
-    cout <<states.size() <<" \n";
+    return a;
 }
 
-void match_lamps(vector<bool> cur_lamp)
+bool present(vector<size_t> &sp,size_t n)
 {
-    //print(cur_lamp);
-    bool match = true;
-    for(unsigned int i=0;i<final_on_state_pos.size();i++)
+    for(size_t i=0;i<sp.size();i++)
     {
-        if(cur_lamp[final_on_state_pos[i]] != 1)
-        {
-            match = 0;
-            break;
-        }
+        if(sp[i] == n)
+            return true;
     }
-
-    for(unsigned int i=0;i<final_off_state_pos.size();i++)
-    {
-        if(cur_lamp[final_off_state_pos[i]] != 0)
-        {
-            match = 0;
-            break;
-        }
-    }
-
-    if(match == 1)
-    {
-        matched_lamps.push_back(cur_lamp);
-    }
-
+    return false;
 }
 
-void gen_pos(int cnt,int cval,vector<bool> cur_lmp)
+void find_primefactors(vector<size_t> &un_p,vector<size_t> &sor_p,size_t n,bool first_no)
 {
-    //print(cur_lmp);
-    vector<bool> cpy(cur_lmp.size());
-    if(cnt < cval)
+    size_t a,b;
+    if(first_no)
     {
-        for(int btn=1;btn<buttons;btn++)
+        for(size_t factor = 3;factor < (n/2);factor+=2)
         {
-            switch(btn)
+            if(n%factor == 0 && prime(factor))
             {
-                case 1:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i++)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 2:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i+=2)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 3:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=2;i<cpy.size();i+=2)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 4:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i+=3)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                default:break;
+                a = factor;
+                b = (n/factor);
+                //if(!present(sor_p,n) )//&& prime(a))
+                    sor_p.push_back(a);
+
+                //if(!present(sor_p,b) )//&& prime(b))
+                    sor_p.push_back(b);
+
+                un_p.push_back(a);
+                un_p.push_back(b);
+
+                last_factor = b;
+                break;
             }
         }
     }
     else
     {
-        //match with final state
-        match_lamps(cur_lmp);
-    }
+        //b = gcd(last_factor,(n/last_factor));
+        b = (n/last_factor);
+        if(!present(sor_p,b) )//&& prime(b))
+            sor_p.push_back(b);
 
+        un_p.push_back(b);
+        last_factor = b;
+    }
 }
 
-void gen_graph(int cur,int c_val,node *cur_node)
+void print_factors(vector<size_t> &pr)
 {
-    if(cur < c_val)
+    cout << "Size: " << pr.size() << '\n';
+    for(size_t i=0;i<pr.size();i++)
     {
-        node *nxt = NULL;
-        for(int i=1;i<buttons;i++)
+        cout << pr[i] << " ";
+    }
+    cout << '\n';
+}
+
+size_t sorted_pos(vector<size_t> &s_p,size_t n)
+{
+    size_t i=0;
+    for(;i<s_p.size();i++)
+    {
+        if(s_p[i] == n)
+            break;
+    }
+    return i;
+}
+
+void decipher(vector<size_t> &uns_p,vector<size_t> &s_p,string &dtext)
+{
+    size_t pos = 0;
+    for(size_t i=0;i<uns_p.size();i++)
+    {
+        pos = 0;
+        pos = sorted_pos(s_p,uns_p[i]);
+        if(pos > 25)
         {
-            switch(i)
-            {
-                case 1:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i++)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 2:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i+=2)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 3:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=2;i<cpy.size();i+=2)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                case 4:
-                    cpy.clear();
-                    cpy = cur_lmp;
-                    for(int i=1;i<cpy.size();i+=3)
-                    {
-                        cpy[i] = !cpy[i];
-                    }
-                    gen_pos((cnt+1),cval,cpy);
-                    break;
-                default:break;
-            }
+            pos = pos % 25;
         }
+        dtext.push_back(char(65+pos));
     }
 }
 
 int main(int argc,char *argv[])
 {
-    ifstream fin("lamps.in");
-    ofstream fout("lamps.out");
-    int noof_lamps,c_value,f_lamp_pos = 0;
-    fin >> noof_lamps >> c_value;
-    fin >> f_lamp_pos;
-    while(f_lamp_pos != -1)
+    size_t t,n,l;
+    size_t cyper;
+    cin >> t;
+    for(size_t i=1;i<=t;i++)
     {
-        check_on_states = 1;
-        final_on_state_pos.push_back(f_lamp_pos);
-        fin >> f_lamp_pos;
-    }
-    fin >> f_lamp_pos;
-    while(f_lamp_pos != -1)
-    {
-        check_off_states = 1;
-        final_off_state_pos.push_back(f_lamp_pos);
-        fin >> f_lamp_pos;
-    }
-    //print_int(final_on_state_pos);
-    //print_int(final_off_state_pos);
+        cin >> n >> l;
 
-    //initialize head node
-    node *head_node = new node(noof_lamps);
+        last_factor = 0;
+        vector<size_t> prime_factors;
+        vector<size_t> prime_factors_unsorted;
+        string deci_text;
 
-    vector<bool> lamp(noof_lamps+1,1);
-
-    gen_pos(0,c_value,lamp);
-
-    if(matched_lamps.empty())
-    {
-        fout << "IMPOSSIBLE" << '\n';
-    }
-    else
-    {
-        for(auto &x:matched_lamps)
+        for(size_t li = 0;li < l ;li++)
         {
-            unsigned int index = 1;
-            for(vector<bool> &y=x;index<y.size();index++)
+            cin >> cyper;
+            if(li == 0)
             {
-                fout << y[index];
+                //find the prime factors of first cyper text
+                find_primefactors(prime_factors_unsorted,prime_factors,cyper,true);
             }
-            fout << '\n';
+            else
+            {
+                find_primefactors(prime_factors_unsorted,prime_factors,cyper,false);
+            }
         }
+
+        sort(prime_factors.begin(),prime_factors.end());
+        //print_factors(prime_factors);
+        //print_factors(prime_factors_unsorted);
+
+        decipher(prime_factors_unsorted,prime_factors,deci_text);
+        cout << "Case #" << i << ": " << deci_text << endl;
+        cout.flush();
+
     }
-
-    delete head_node;
-
-    fin.close();
-    fout.close();
     return 0;
 }
